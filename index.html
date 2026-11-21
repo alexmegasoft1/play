@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0B1020">
+<meta name="robots" content="noindex">
+<title>الدخول إلى اللعب · ميجا</title>
+<!-- mega-join: صفحة الربط الذكي بين الموبايل وشاشة ميجا (ملف ثابت، لا يرسل أي بيانات لأي خادم) -->
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:"Cairo","Segoe UI",Tahoma,system-ui,sans-serif;background:radial-gradient(circle at 50% -10%,#1E2B55,#0B1020 60%);color:#fff;display:flex;justify-content:center;padding:22px 16px}
+.box{width:100%;max-width:440px;display:flex;flex-direction:column;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;color:#F2B544}
+.logo span{width:40px;height:40px;border-radius:12px;background:#F2B544;color:#0B1020;display:flex;align-items:center;justify-content:center;font-size:22px}
+.card{background:#141C36;border:1px solid #26335C;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:14px}
+h1{font-size:25px;margin:0;line-height:1.4}
+p{margin:0;font-size:17px;line-height:1.7;color:#C7D0E6}
+.btn{border:0;border-radius:18px;padding:17px 20px;font-size:21px;font-weight:900;background:#F2B544;color:#0B1020;width:100%;font-family:inherit;cursor:pointer;text-decoration:none;text-align:center;display:block}
+.ghost{background:#1F2A44;color:#fff;font-size:18px;padding:14px}
+.warn{background:#3A1D1D;border-color:#7F1D1D}
+.ok{background:#12301F;border-color:#166534}
+.tip{background:#1A2547;border-radius:16px;padding:12px 14px;font-size:16px;line-height:1.7;color:#E2E8F0}
+.tip b{color:#F2B544}
+ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:10px;font-size:16.5px;line-height:1.7;color:#E2E8F0}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row a{flex:1;min-width:120px}
+.spin{width:46px;height:46px;border-radius:50%;border:5px solid #26335C;border-top-color:#F2B544;animation:r 0.9s linear infinite;margin:6px auto}
+@keyframes r{to{transform:rotate(360deg)}}
+.bar{height:8px;border-radius:9px;background:#26335C;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#F2B544;transition:width .3s}
+.ltr{direction:ltr;unicode-bidi:embed;font-weight:800;color:#fff}
+.small{font-size:14px;color:#8A96B8;text-align:center}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo"><span>🎮</span> ميجا · اللعب مع العائلة</div>
+
+  <div id="v-check" class="card">
+    <div class="spin"></div>
+    <p style="text-align:center">جارٍ فحص الاتصال بالشاشة…</p>
+  </div>
+
+  <div id="v-inapp" class="card warn hide">
+    <h1>افتح الرابط في المتصفح</h1>
+    <p>يبدو أنك فتحت الرمز من داخل تطبيق قارئ. بعض هذه التطبيقات يمنع الاتصال بالشاشة.</p>
+    <a id="chrome" class="btn hide">افتح في كروم</a>
+    <button id="copy" class="btn ghost">نسخ الرابط لفتحه في سفاري أو كروم</button>
+  </div>
+
+  <div id="v-off" class="card warn hide">
+    <h1>موبايلك ليس على شبكة البيت</h1>
+    <p>الشاشة متصلة بإنترنت مختلف عن الذي يستخدمه موبايلك الآن، لذلك لن يصل إليها.</p>
+    <ol>
+      <li id="off-wifi">اتصل بواي فاي البيت: امسح <b>الرمز الأخضر</b> الظاهر على الشاشة بالكاميرا واضغط «اتصال».</li>
+      <li>إن كان لديك <b>VPN</b> أو برنامج حماية يغيّر الاتصال، أوقفه مؤقتًا.</li>
+      <li>تأكد أن «البيانات الخلوية» لا تعمل بدل الواي فاي (أوقفها لحظة إن لزم).</li>
+    </ol>
+    <button id="recheck" class="btn">فحصت، أعد المحاولة</button>
+    <button id="anyway" class="btn ghost">ادخل على أي حال</button>
+  </div>
+
+  <div id="v-ready" class="card hide">
+    <h1>جاهز للدخول</h1>
+    <p>اضغط الزر، وسنجرّب كل طرق الوصول إلى الشاشة تلقائيًا حتى ينجح أحدها.</p>
+    <button id="go" class="btn">ادخل اللعبة ▶</button>
+  </div>
+
+  <div id="v-try" class="card hide">
+    <div class="spin"></div>
+    <p id="try-t" style="text-align:center">جارٍ الاتصال…</p>
+    <div class="bar"><i id="try-b"></i></div>
+    <p class="small">إذا ظهرت لك صفحة خطأ، ارجع إلى هذه الصفحة؛ ستكمل المحاولة بالطريقة التالية.</p>
+  </div>
+
+  <div id="v-ok" class="card ok hide">
+    <h1>✓ تم الاتصال بالشاشة</h1>
+    <p>صفحة اللعبة مفتوحة في نافذة أخرى. إن لم تظهر لك، اضغط الزر.</p>
+    <a id="open-ok" class="btn" target="megaplay">افتح صفحة اللعبة</a>
+  </div>
+
+  <div id="v-fail" class="card warn hide">
+    <h1>تعذّر الوصول إلى الشاشة</h1>
+    <p>جرّبنا كل العناوين ولم يستجب أيٌّ منها. الأسباب الأكثر شيوعًا بالترتيب:</p>
+    <ol>
+      <li>تشغيل <b>VPN</b> أو «DNS خاص» على الموبايل: أوقفه وأعد المحاولة.</li>
+      <li>الموبايل على <b>شبكة الضيوف</b> أو شبكة أخرى في البيت: اتصل بنفس شبكة الشاشة<span id="fail-w"></span>.</li>
+      <li>فتح الرمز من تطبيق قارئ: افتحه في <b>كروم</b> أو <b>سفاري</b>.</li>
+      <li>الراوتر يعزل الأجهزة عن بعضها: اطلب تفعيل <b>«شبكة الشاشة»</b> من لوحة التحكم، ثم امسح الرمز الأخضر.</li>
+    </ol>
+    <button id="retry" class="btn">أعد المحاولة</button>
+    <p class="small">أو جرّب عنوانًا بنفسك:</p>
+    <div id="manual" class="row"></div>
+  </div>
+
+  <div id="v-bad" class="card warn hide">
+    <h1>الرابط غير مكتمل</h1>
+    <p>افتح «العب مع العائلة» على الشاشة، ثم امسح الرمز الظاهر عليها.</p>
+  </div>
+
+  <p class="small">عناوين الشاشة موجودة داخل الرمز نفسه ولا تُرسَل إلى أي خادم.</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var views = ['check', 'inapp', 'off', 'ready', 'try', 'ok', 'fail', 'bad'];
+  function show(v, keepInapp) {
+    views.forEach(function (n) {
+      if (n === 'inapp' && keepInapp) return;
+      $('v-' + n).classList.toggle('hide', n !== v);
+    });
+  }
+
+  // البيانات بعد علامة # (لا تُرسَل لأي خادم)، أو في الاستعلام عند الفتح من كروم عبر Intent
+  var raw = (location.hash || '').replace(/^#/, '') || (location.search || '').replace(/^\?/, '');
+  var q = {};
+  raw.split('&').forEach(function (kv) {
+    var i = kv.indexOf('=');
+    if (i > 0) q[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
+  });
+  var path = q.p && q.p.charAt(0) === '/' ? q.p : '/play';
+  var addrs = (q.a || '').split(',').filter(function (a) { return /^[0-9.]{7,15}:\d{2,5}$/.test(a); });
+  var tvIp = q.g || '';
+  var wifi = q.w || '';
+
+  if (!addrs.length) { show('bad'); return; }
+
+  // العنوان الذي نجح سابقًا يُجرَّب أولًا
+  try {
+    var last = localStorage.getItem('mega_last');
+    if (last && addrs.indexOf(last) > 0) { addrs.splice(addrs.indexOf(last), 1); addrs.unshift(last); }
+  } catch (e) {}
+
+  function urlOf(a) { return 'http://' + a + path; }
+
+  if (wifi) {
+    $('off-wifi').innerHTML = 'اتصل بواي فاي البيت <b class="ltr"></b>: امسح <b>الرمز الأخضر</b> على الشاشة بالكاميرا واضغط «اتصال».';
+    $('off-wifi').querySelector('.ltr').textContent = '«' + wifi + '»';
+    $('fail-w').textContent = ' (' + wifi + ')';
+  }
+
+  addrs.forEach(function (a, i) {
+    var l = document.createElement('a');
+    l.className = 'btn ghost';
+    l.href = urlOf(a);
+    l.target = 'megaplay';
+    l.textContent = 'العنوان ' + (i + 1);
+    $('manual').appendChild(l);
+  });
+
+  // متصفحات داخل التطبيقات (قارئات الرموز، فيسبوك، إنستغرام، تطبيق جوجل…)
+  var ua = navigator.userAgent || '';
+  var inApp = /; wv\)|FBAN|FBAV|Instagram|Line\/|Snapchat|MicroMessenger|GSA\/|SamsungBrowser\/.*CrossApp/i.test(ua);
+  if (inApp) {
+    $('v-inapp').classList.remove('hide');
+    if (/Android/i.test(ua)) {
+      var c = $('chrome');
+      c.classList.remove('hide');
+      c.href = 'intent://' + location.host + location.pathname + '?' + raw + '#Intent;scheme=https;package=com.android.chrome;end';
+    }
+  }
+  $('copy').onclick = function () {
+    var t = location.href;
+    var done = function () { $('copy').textContent = '✓ نُسخ الرابط، الصقه في المتصفح'; };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () { prompt('انسخ الرابط:', t); });
+    else prompt('انسخ الرابط:', t);
+  };
+
+  // ١) هل الموبايل على شبكة البيت؟ نقارن عنوان الإنترنت العام للموبايل بعنوان الشاشة
+  function checkNet() {
+    show('check', true);
+    if (!tvIp || !window.fetch) { show('ready', true); return; }
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 4000);
+    fetch('https://api.ipify.org?format=json', { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        clearTimeout(timer);
+        show(d && d.ip && d.ip !== tvIp ? 'off' : 'ready', true);
+      })
+      .catch(function () { clearTimeout(timer); show('ready', true); });
+  }
+
+  // ٢) تجربة العناوين واحدًا تلو الآخر في نافذة واحدة، وصفحة اللعبة ترسل «وصلت» عند فتحها
+  var win = null, idx = 0, timer = null, stepAt = 0, trying = false, success = false;
+  var WAIT = 5000;
+
+  function stepUI() {
+    $('try-t').textContent = addrs.length > 1
+      ? 'جارٍ تجربة الطريقة ' + (idx + 1) + ' من ' + addrs.length + '…'
+      : 'جارٍ الاتصال بالشاشة…';
+    $('try-b').style.width = Math.round(((idx + 1) / addrs.length) * 100) + '%';
+  }
+
+  function arm() {
+    stepAt = Date.now();
+    clearTimeout(timer);
+    timer = setTimeout(next, WAIT);
+    stepUI();
+  }
+
+  function start() {
+    success = false; trying = true; idx = 0;
+    show('try', true);
+    win = window.open(urlOf(addrs[0]), 'megaplay');
+    if (!win) { location.href = urlOf(addrs[0]); return; } // النوافذ محجوبة: نفتح الأول مباشرة
+    arm();
+  }
+
+  function next() {
+    if (success || !trying) return;
+    idx++;
+    if (idx >= addrs.length) { fail(); return; }
+    try { win.location.href = urlOf(addrs[idx]); } catch (e) { win = window.open(urlOf(addrs[idx]), 'megaplay'); }
+    arm();
+  }
+
+  function fail() {
+    trying = false;
+    clearTimeout(timer);
+    try { if (win) win.close(); } catch (e) {}
+    show('fail', true);
+  }
+
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.mega !== 'ok' || success) return;
+    success = true; trying = false;
+    clearTimeout(timer);
+    var at = e.data.at || addrs[idx];
+    try { localStorage.setItem('mega_last', at); } catch (x) {}
+    $('open-ok').href = 'http://' + at + path;
+    show('ok', true);
+    try { if (win) win.focus(); } catch (x) {}
+  });
+
+  // سفاري يوقف المؤقتات في التبويب الخلفي: عند الرجوع نكمل فورًا من حيث توقفنا
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && trying && !success && Date.now() - stepAt >= WAIT) next();
+  });
+
+  $('go').onclick = start;
+  $('anyway').onclick = function () { show('ready', true); start(); };
+  $('retry').onclick = start;
+  $('recheck').onclick = checkNet;
+  checkNet();
+})();
+</script>
+</body>
+</html>
