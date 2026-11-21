@@ -214,6 +214,8 @@ ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:10p
 
   function next() {
     if (success || !trying) return;
+    // آيفون يوقف هذا التبويب وصفحة اللعبة مفتوحة في تبويب آخر: لا نحكم بالفشل ونحن في الخلفية
+    if (document.hidden) return;
     idx++;
     if (idx >= addrs.length) { fail(); return; }
     try { win.location.href = urlOf(addrs[idx]); } catch (e) { win = window.open(urlOf(addrs[idx]), 'megaplay'); }
@@ -240,7 +242,9 @@ ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:10p
 
   // سفاري يوقف المؤقتات في التبويب الخلفي: عند الرجوع نكمل فورًا من حيث توقفنا
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible' && trying && !success && Date.now() - stepAt >= WAIT) next();
+    if (document.visibilityState !== 'visible' || !trying || success) return;
+    // مهلة قصيرة لتصل رسالة «وصلت» المؤجلة قبل الانتقال للعنوان التالي
+    setTimeout(function () { if (!success && Date.now() - stepAt >= WAIT) next(); }, 1500);
   });
 
   $('go').onclick = start;
