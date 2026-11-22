@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0B1020"><title>العب مع العائلة</title><meta name="robots" content="noindex"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap"><!-- mega-play: يد اللعب عبر الإنترنت (ملف ثابت؛ المفتاح بعد # لا يُرسل لأي خادم) --><script src="megaparty.js"></script><script src="pieces.js"></script><script>(function(){var q={};(location.hash.slice(1)).split('&').forEach(function(kv){var i=kv.indexOf('=');if(i>0)q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1))});var lan=q.a?'index.html#a='+encodeURIComponent(q.a).replace(/%2C/g,',')+(q.g?'&g='+q.g:'')+(q.w?'&w='+encodeURIComponent(q.w):''):'';if(!/^[0-9a-f]{32}$/.test(q.pk||'')){if(lan)location.replace(lan);return}window.MEGA_LAN=lan;MegaParty.init(q.pk);/* تعذّر الوصول للشاشة عبر الإنترنت: إن لم ننجح أبدًا ننتقل تلقائيًا للشبكة المحلية، وإلا نعرض زرًا لذلك */window.megaLan=function(f){if(!lan)return;if(!MegaParty.everOpen&&f>=2){location.href=lan;return}var b=document.getElementById('lanb');if(!b&&f>=3){b=document.createElement('a');b.id='lanb';b.className='btn ghost';b.href=lan;b.textContent='جرّب عبر واي فاي البيت';b.style.textDecoration='none';var c=document.querySelector('.center');if(c)c.appendChild(b)}};})();</script>
+<script>/* إشعار صفحة الربط الذكي بأن الاتصال نجح */try{if(window.opener)window.opener.postMessage({mega:'ok',at:location.host},'*')}catch(e){}</script><style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button,input,textarea,select{font-family:inherit}body{font-family:Cairo,Tahoma,sans-serif;background:#0B1020;color:#fff;display:flex;flex-direction:column}
+header{padding:12px 16px;display:flex;align-items:center;gap:10px;font-weight:800;background:#111833}
+header img,header .av{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#333;display:flex;align-items:center;justify-content:center}
+header .sc{margin-inline-start:auto;background:#F2B544;color:#0B1020;border-radius:999px;padding:6px 14px}
+main{flex:1;display:flex;flex-direction:column;padding:14px;gap:12px}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+input[type=text]{width:100%;max-width:340px;font-size:22px;padding:16px;border-radius:16px;border:0;text-align:center}
+.btn{border:0;border-radius:18px;padding:16px 26px;font-size:22px;font-weight:800;background:#F2B544;color:#0B1020}
+.ghost{background:#1F2A44;color:#fff}
+.photo{width:120px;height:120px;border-radius:50%;background:#1F2A44 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:44px;border:3px dashed #3A4A6B}
+.q{font-size:22px;font-weight:800;text-align:center;line-height:1.5}
+.grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{border:0;border-radius:20px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;transition:transform .08s,opacity .2s}
+.opt b{font-size:40px;line-height:1}.opt span{font-size:20px;font-weight:800}
+.opt:active{transform:scale(.96)}.opt.dim{opacity:.25}.opt.sel{outline:6px solid #fff}
+.tap{border:0;border-radius:50%;width:min(80vw,62vh);aspect-ratio:1;margin:auto;font-size:40px;font-weight:900;color:#0B1020;background:#F2B544}
+.pad{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:14px}.pad button{border:0;border-radius:24px;color:#fff;font-size:54px;font-weight:900;transition:transform .06s,filter .1s}.pad button:active{transform:scale(.94);filter:brightness(1.4)}.pad button.used{opacity:.3}
+.dots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.dots i{width:22px;height:22px;border-radius:50%;background:#1F2A44;display:block}
+.tap:active{transform:scale(.95)}.big{font-size:40px;font-weight:900}.muted{color:#A7B0C4;line-height:1.7}.bar{height:8px;background:#1F2A44;border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;background:#F2B544}
+</style></head><body>
+<header><div class="av" id="av">؟</div><span id="who">العب مع العائلة</span><span class="sc" id="sc">٠</span></header>
+<main id="m"><div class="center">
+<div class="big">أهلًا بك 👋</div><div class="muted">اكتب اسمك وأضف صورتك لتظهر على الشاشة</div>
+<label class="photo" id="ph">📷<input type="file" id="pf" accept="image/*" capture="user" hidden></label>
+<input type="text" id="nm" maxlength="16" placeholder="اسمك">
+<button class="btn" id="go">ادخل اللعبة</button>
+<div class="muted" style="font-size:13px">الصورة اختيارية، وتبقى على الشاشة أثناء اللعب فقط</div></div></main>
+<script>
+var C=['#E21B3C','#1368CE','#D89E00','#26890C'],S=['▲','◆','●','■'],ws=null,name=localStorage.getItem('mega_name')||'',photo=localStorage.getItem('mega_photo')||'',st={},timer=null,joined=false;
+var m=document.getElementById('m');
+function ar(n){return String(n).replace(/[0-9]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d]})}
+function esc(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function buzz(t){if(navigator.vibrate)navigator.vibrate(t||15)}
+function showPhoto(){var p=document.getElementById('ph');if(p&&photo){p.style.backgroundImage='url('+photo+')';p.firstChild.textContent=''}
+var av=document.getElementById('av');if(photo){av.outerHTML='<img id="av" src="'+photo+'">'}else if(name){av.textContent=name.charAt(0)}}
+document.getElementById('nm').value=name;showPhoto();
+document.getElementById('pf').addEventListener('change',function(){var f=this.files[0];if(!f)return;var img=new Image(),u=URL.createObjectURL(f);img.onload=function(){
+var s=256,c=document.createElement('canvas');c.width=s;c.height=s;var k=Math.min(img.width,img.height);c.getContext('2d').drawImage(img,(img.width-k)/2,(img.height-k)/2,k,k,0,0,s,s);
+photo=c.toDataURL('image/jpeg',0.8);try{localStorage.setItem('mega_photo',photo)}catch(e){}URL.revokeObjectURL(u);showPhoto()};img.src=u});
+var wanted=false,fails=0;
+function connect(){if(ws&&ws.readyState<=1)return;wanted=true;ws=MegaParty.socket();
+ws.onopen=function(){fails=0;ws.send(JSON.stringify({t:'join',name:name,photo:photo}))};
+ws.onmessage=function(e){var d=JSON.parse(e.data);if(d.t==='welcome'){joined=true;window.myColor=d.color;document.getElementById('who').textContent=name;showPhoto()}
+else if(d.t==='full'){m.innerHTML='<div class="center big">اللعبة ممتلئة</div>'}
+else if(d.t==='locked'){[].forEach.call(document.querySelectorAll('.opt'),function(b,i){b.classList.toggle('dim',i!==d.i);b.classList.toggle('sel',i===d.i)})}
+else if(d.t==='seqLocked'){m.innerHTML='<div class="center"><div class="big">تم الإرسال ✓</div><div class="muted">انتظر بقية اللاعبين…</div></div>'}
+else if(d.t==='state'){st=d;render()}
+else if(window.onExtra){onExtra(d)}};
+ws.onclose=function(){fails++;if(window.megaPadHide)megaPadHide();m.innerHTML='<div class="center"><div class="big">انقطع الاتصال</div><div class="muted">جارٍ إعادة الاتصال تلقائيًا…<br>تأكد أن الواي فاي يعمل</div><button class="btn" id="rc">أعد الاتصال الآن</button></div>';
+var rc=document.getElementById('rc');if(rc)rc.onclick=function(){location.reload()};
+/* بعد عدة محاولات: إن عادت الشاشة تستجيب نعيد تحميل الصفحة كاملة */
+if(window.megaLan)megaLan(fails);
+setTimeout(connect,Math.min(1500*fails,6000))}}
+/* عودة الواي فاي أو الرجوع للصفحة: اتصال فوري بدل الانتظار */
+window.addEventListener('online',function(){MegaParty.kick();if(wanted)connect()});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&wanted&&(!ws||ws.readyState>1))connect()});
+window.addEventListener('pageshow',function(e){if(e.persisted&&wanted&&(!ws||ws.readyState>1))connect()});
+document.getElementById('go').onclick=function(){name=document.getElementById('nm').value.trim();if(!name){document.getElementById('nm').focus();return}localStorage.setItem('mega_name',name);m.innerHTML='<div class="center muted">جارٍ الدخول…</div>';connect()};
+function countdown(ms,el){clearInterval(timer);var end=Date.now()+ms,tot=Math.max(ms,1);timer=setInterval(function(){var l=end-Date.now();if(l<=0){clearInterval(timer);l=0}if(el)el.style.width=(l/tot*100)+'%'},100)}
+function render(){document.getElementById('sc').textContent=ar(st.score||0);clearInterval(timer);
+if(st.phase==='lobby'){m.innerHTML='<div class="center"><div class="big">أنت في اللعبة! 🎉</div><div class="muted">اسمك ظاهر على الشاشة الآن<br>انتظر حتى تبدأ اللعبة · اللاعبون: '+ar(st.players||1)+'</div><div class="muted" style="font-size:14px">عند بدء اللعبة ستظهر الأزرار هنا، فاضغط بسرعة ودقة</div></div>'}
+else if(st.phase==='question'){var o=st.opts||[],h='<div class="muted" style="text-align:center">السؤال '+ar(st.round)+' من '+ar(st.rounds)+'</div><div class="bar"><i id="t" style="width:100%"></i></div><div class="q">'+esc(st.q)+'</div><div class="grid">';
+var CC=st.tf?['#16A34A','#DC2626']:C,SS=st.tf?['✓','✗']:S;
+for(var i=0;i<st.n;i++)h+='<button class="opt'+(st.answer!=null?(st.answer===i?' sel':' dim'):'')+'" style="background:'+CC[i]+'" data-i="'+i+'"><b>'+SS[i]+'</b><span>'+esc(o[i]||'')+'</span></button>';
+m.innerHTML=h+'</div>';countdown(st.left,document.getElementById('t'));
+[].forEach.call(document.querySelectorAll('.opt'),function(b){b.addEventListener('touchstart',pick,{passive:true});b.addEventListener('click',pick)})}
+else if(st.phase==='reveal'){var ok=st.answer===st.correct,o2=st.opts||[];buzz(ok?[30,40,30]:120);m.innerHTML='<div class="center" style="background:'+(ok?'#16A34A':'#DC2626')+';border-radius:24px;padding:16px"><div class="big">'+(ok?'إجابة صحيحة!':(st.answer==null?'انتهى الوقت':'إجابة خاطئة'))+'</div><div>الإجابة: <b>'+esc(o2[st.correct]||'')+'</b></div><div style="font-size:30px">+'+ar(st.gained||0)+'</div><div>ترتيبك: '+ar(st.rank)+'</div></div>'}
+else if(st.phase==='memShow'){m.innerHTML='<div class="center"><div class="big">👀</div><div class="big" style="font-size:30px">انظر إلى الشاشة الآن</div><div class="muted">احفظ ترتيب الألوان ('+ar(st.len)+')<br>الجولة '+ar(st.round)+' من '+ar(st.rounds)+'</div></div>'}
+else if(st.phase==='seqInput'){if(st.done){m.innerHTML='<div class="center"><div class="big">تم الإرسال ✓</div><div class="muted">انتظر بقية اللاعبين…</div></div>';return}
+var seq=[],mem=st.mode==='memory',it=st.items||[],len=st.len||it.length;
+var h2='<div class="bar"><i id="t" style="width:100%"></i></div><div class="q">'+(mem?'اضغط الألوان بالترتيب نفسه':'اضغط الأرقام من الأصغر إلى الأكبر')+'</div><div class="dots" id="dt">';
+for(var k=0;k<len;k++)h2+='<i></i>';h2+='</div><div class="pad">';
+for(var j=0;j<(mem?4:it.length);j++)h2+='<button data-j="'+j+'" style="background:'+C[j%4]+(!mem&&it.length%2&&j===it.length-1?';grid-column:span 2':'')+'"><span dir="ltr">'+(mem?S[j]:esc(it[j]))+'</span></button>';
+m.innerHTML=h2+'</div><button class="btn ghost" id="rs">إعادة من البداية</button>';countdown(st.left,document.getElementById('t'));
+function paint(){[].forEach.call(document.querySelectorAll('#dt i'),function(d,x){d.style.background=x<seq.length?(mem?C[seq[x]]:'#F2B544'):'#1F2A44'});
+if(!mem)[].forEach.call(document.querySelectorAll('.pad button'),function(b){b.classList.toggle('used',seq.indexOf(+b.getAttribute('data-j'))>=0)})}
+function press(e){e.preventDefault();var j=+this.getAttribute('data-j');if(!mem&&seq.indexOf(j)>=0)return;seq.push(j);buzz(12);paint();
+if(seq.length>=len){ws.send(JSON.stringify({t:'seq',s:seq}));st.done=true}}
+[].forEach.call(document.querySelectorAll('.pad button'),function(b){b.addEventListener('touchstart',press,{passive:false});b.addEventListener('mousedown',press)});
+document.getElementById('rs').onclick=function(){seq=[];paint()}}
+else if(st.phase==='seqReveal'){buzz(st.ok?[30,40,30]:120);m.innerHTML='<div class="center" style="background:'+(st.ok?'#16A34A':'#DC2626')+';border-radius:24px;padding:16px"><div class="big">'+(st.ok?'ترتيب صحيح!':(st.done?'ترتيب خاطئ':'انتهى الوقت'))+'</div><div style="font-size:30px">+'+ar(st.gained||0)+'</div><div>ترتيبك: '+ar(st.rank)+'</div></div>'}
+else if(st.phase==='tapRace'){m.innerHTML='<div class="bar"><i id="t" style="width:100%"></i></div><div class="muted" style="text-align:center">اضغط الزر بأسرع ما يمكن!</div><button class="tap" id="tp">اضغط!<br><span id="tc">'+ar(st.taps||0)+'</span></button>';countdown(st.left,document.getElementById('t'));var n=st.taps||0,tp=document.getElementById('tp');
+tp.addEventListener('touchstart',function(e){e.preventDefault();n++;document.getElementById('tc').textContent=ar(n);ws.send('{"t":"tap"}');buzz(8)},{passive:false});tp.addEventListener('mousedown',function(){n++;document.getElementById('tc').textContent=ar(n);ws.send('{"t":"tap"}')})}
+else if(st.phase==='tapResult'||st.phase==='podium'){m.innerHTML='<div class="center"><div class="big">'+(st.rank===1?'أنت الفائز! 🏆':'ترتيبك '+ar(st.rank))+'</div><div class="muted">'+(st.phase==='tapResult'?'ضغطاتك: '+ar(st.taps):'نقاطك: '+ar(st.score))+'</div></div>';if(st.rank===1)buzz([60,60,60,60,200])}}
+function pick(e){if(e.type==='click'&&st.answer!=null)return;var i=+this.getAttribute('data-i');if(st.answer!=null)return;st.answer=i;ws.send(JSON.stringify({t:'answer',i:i}));buzz(20);
+[].forEach.call(document.querySelectorAll('.opt'),function(b,k){b.classList.toggle('dim',k!==i);b.classList.toggle('sel',k===i)})}
+</script><script src="chess.js"></script><script src="party.js"></script><script src="pad.js"></script></body></html>
