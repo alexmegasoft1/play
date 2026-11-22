@@ -219,10 +219,25 @@
     if (adv > 0) h += '<span style="margin-left:12px;color:#4ADE80;font-weight:800">+' + ar(adv) + '</span>';
     return h + '</div>';
   }
+  var botFor = '';
+  // اللعب ضد الشاشة: موبايل اللاعب يحسب نقلة الشاشة ويرسلها باسمها
+  function botMove(s) {
+    if (!st.botColor || s.t !== st.botColor || st.result || !window.ChessBot || botFor === s.b + s.t) return;
+    botFor = s.b + s.t;
+    setTimeout(function () {
+      var cur = st.chess;
+      if (!cur || cur.b !== s.b || cur.t !== s.t || st.result) { botFor = ''; return; }
+      var mv = ChessBot.best(s, st.level == null ? 1 : st.level);
+      if (!mv) return;
+      var ns = Chess.apply(s, mv);
+      send({ t: 'chess_bot', s: ns, m: [mv.f, mv.t], st: Chess.status(ns) });
+    }, 650);
+  }
   function renderChess() {
     var s = st.chess || Chess.start();
     s = { b: s.b, t: s.t, c: s.c || '', ep: s.ep == null ? -1 : s.ep, h: s.h || 0, n: s.n || 1 };
     if (s.b !== lastBoard) { sel = -1; pendingPromo = null; lastBoard = s.b; }
+    botMove(s);
     var me = st.color, myTurn = !!me && me === s.t && !st.result;
     var legal = myTurn ? Chess.moves(s) : [];
     var targets = sel >= 0 ? legal.filter(function (x) { return x.f === sel; }) : [];
