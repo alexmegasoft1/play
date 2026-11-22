@@ -89,4 +89,4 @@ tp.addEventListener('touchstart',function(e){e.preventDefault();n++;document.get
 else if(st.phase==='tapResult'||st.phase==='podium'){m.innerHTML='<div class="center"><div class="big">'+(st.rank===1?'أنت الفائز! 🏆':'ترتيبك '+ar(st.rank))+'</div><div class="muted">'+(st.phase==='tapResult'?'ضغطاتك: '+ar(st.taps):'نقاطك: '+ar(st.score))+'</div></div>';if(st.rank===1)buzz([60,60,60,60,200])}}
 function pick(e){if(e.type==='click'&&st.answer!=null)return;var i=+this.getAttribute('data-i');if(st.answer!=null)return;st.answer=i;ws.send(JSON.stringify({t:'answer',i:i}));buzz(20);
 [].forEach.call(document.querySelectorAll('.opt'),function(b,k){b.classList.toggle('dim',k!==i);b.classList.toggle('sel',k===i)})}
-</script><script src="chess.js"></script><script src="party.js"></script><script src="pad.js"></script></body></html>
+</script><script src="chess.js"></script><script src="chessbot.js"></script><script src="party.js"></script><script src="pad.js"></script></body></html>
