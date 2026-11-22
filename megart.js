@@ -22,6 +22,11 @@
     this.rk = rk;
     this.brokers = opts.brokers || g.MEGA_RT_BROKERS || BROKERS;
     this.onstate = opts.onstate || function () {};
+    this.onstatus = opts.onstatus || function () {};
+    /* سيرفر لوحة التحكم: طريق احتياطي إن تعذّرت القناة الفورية أو لم تكن الشاشة متصلة بها */
+    this.server = (opts.server || '').replace(/\/+$/, '');
+    this.tvAt = 0;
+    this.status = null;
     this.ws = null;
     this.up = false;
     this.bi = 0;
@@ -31,7 +36,7 @@
     var self = this;
     this.ready = Promise.all([
       topicOf(rk),
-      crypto.subtle.importKey('raw', te.encode(rk), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+      crypto.subtle.importKey('raw', te.encode(rk), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify'])
     ]).then(function (r) { self.topic = r[0]; self.key = r[1]; });
     this.ready.then(function () { self._open(); });
   }
@@ -56,9 +61,14 @@
         self.up = true;
         self.onstate(true, url);
         self._ping = setInterval(function () { try { ws.send(u8([0xC0, 0])); } catch (e) {} }, 25000);
+        // الاشتراك في حالة الشاشة، ثم طلبها فورًا
+        ws.send(packet(0x82, [0, 1].concat(strBytes(self.topic + '/s'), [0])));
         var q = self.queue; self.queue = [];
         q.forEach(function (m) { self._pub(m); });
+        self.send('hello', {});
+        return;
       }
+      if ((b[0] >> 4) === 3) self._incoming(b);
     };
     ws.onclose = ws.onerror = function () {
       clearTimeout(timer);
@@ -69,6 +79,55 @@
       self.bi++;
       self._retry();
     };
+  };
+
+  /** رسالة من الشاشة (حالتها): نتحقق من توقيعها قبل قبولها. */
+  MegaRT.prototype._incoming = function (b) {
+    var self = this, i = 1, len = 0, mul = 1, c;
+    do { c = b[i++]; len += (c & 127) * mul; mul *= 128; } while (c & 128);
+    var tl = (b[i] << 8) | b[i + 1];
+    var topic = new TextDecoder().decode(b.slice(i + 2, i + 2 + tl));
+    var qos = (b[0] >> 1) & 3;
+    var off = i + 2 + tl + (qos ? 2 : 0);
+    if (topic !== this.topic + '/s') return;
+    var env;
+    try { env = JSON.parse(new TextDecoder().decode(b.slice(off))); } catch (e) { return; }
+    if (!env || !env.m || !env.s) return;
+    var sig = new Uint8Array(env.s.match(/../g).map(function (h) { return parseInt(h, 16); }));
+    crypto.subtle.verify('HMAC', this.key, sig, te.encode(env.m)).then(function (ok) {
+      if (!ok) return;
+      var st = JSON.parse(env.m);
+      self.tvAt = Date.now();
+      self.status = st;
+      self.onstatus(st);
+    });
+  };
+
+  /** هل الشاشة متصلة بالقناة الآن؟ (وصلت حالتها خلال آخر ٤٥ ثانية) */
+  MegaRT.prototype.live = function () { return this.up && Date.now() - this.tvAt < 45000; };
+
+  /** إرسال عبر السيرفر (احتياطي): نفس الرسالة الموقّعة، ويتحقق منها السيرفر بمفتاح الشاشة. */
+  MegaRT.prototype.viaServer = function (c, p, file) {
+    var self = this;
+    if (!this.server) return Promise.reject('لا يوجد طريق احتياطي');
+    return this._sign(c, p).then(function (env) {
+      var fd = new FormData();
+      fd.append('tid', self.topic.slice(7));
+      fd.append('env', env);
+      if (file) fd.append('audio', file, file.name || 'voice.webm');
+      return fetch(self.server + '/api/rt.php', { method: 'POST', body: fd }).then(function (r) { return r.json(); });
+    }).then(function (res) {
+      if (!res || !res.ok) throw (res && res.error) || 'تعذّر الإرسال';
+      if (res.status) { self.status = res.status; self.onstatus(res.status, true); }
+      return res;
+    });
+  };
+
+  /** الإرسال الذكي: القناة الفورية إن كانت الشاشة متصلة بها، وإلا السيرفر. */
+  MegaRT.prototype.smart = function (c, p) {
+    var self = this;
+    if (this.live()) return this.send(c, p, true).then(function (ok) { return ok ? 'rt' : self.viaServer(c, p).then(function () { return 'server'; }); });
+    return this.viaServer(c, p).then(function () { return 'server'; });
   };
 
   MegaRT.prototype._retry = function () {
@@ -83,13 +142,17 @@
 
   /** إرسال أمر للشاشة: c نوع الأمر (key، cursor، type، nudge…) و p بياناته. يعيد true إن أُرسل فورًا.
    *  noQueue: لا تؤجل إن كانت القناة مقطوعة (ليستخدم المرسل طريقًا بديلًا). */
-  MegaRT.prototype.send = function (c, p, noQueue) {
+  MegaRT.prototype._sign = function (c, p) {
     var self = this;
     var m = JSON.stringify({ c: c, p: p || {}, t: Date.now(), n: Math.random().toString(36).slice(2, 12) });
     return this.ready.then(function () {
       return crypto.subtle.sign('HMAC', self.key, te.encode(m));
-    }).then(function (sig) {
-      var env = JSON.stringify({ m: m, s: hex(sig) });
+    }).then(function (sig) { return JSON.stringify({ m: m, s: hex(sig) }); });
+  };
+
+  MegaRT.prototype.send = function (c, p, noQueue) {
+    var self = this;
+    return this._sign(c, p).then(function (env) {
       if (self.up && self.ws) { self._pub(env); return true; }
       if (noQueue) return false;
       self.queue.push(env);
