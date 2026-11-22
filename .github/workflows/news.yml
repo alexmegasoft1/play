@@ -1,8 +1,9 @@
 # نسخة احتياطية مجانية من الأخبار لشاشة ميجا (تُستخدم فقط للمصادر التي لا تصل إليها الشاشة)
+# التشغيل التلقائي كل نصف ساعة معطّل لأن GitHub Actions موقوف في الحساب؛ لإعادته أضف تحت on:
+#   schedule:
+#     - cron: '*/30 * * * *'
 name: news
 on:
-  schedule:
-    - cron: '*/30 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
