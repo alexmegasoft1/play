@@ -24,11 +24,18 @@
     '.hand{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;direction:ltr}' +
     '.dt{position:relative;display:flex;flex-direction:column;width:62px;height:124px;background:linear-gradient(135deg,#FFFDF6,#F1EADB 60%,#DCD2BC);border-radius:11px;border:1px solid #8C826C;padding:5px;gap:4px;box-shadow:0 5px 12px rgba(0,0,0,.5),inset 0 0 0 2px rgba(255,255,255,.6);transition:transform .12s}' +
     '.dt:after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFE7A3,#B8862B)}' +
-    '.pile{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px auto}' +
-    '.pile .stk{position:relative;width:74px;height:58px}' +
-    '.pile .bk{position:absolute;width:30px;height:54px;border-radius:7px;background:linear-gradient(135deg,#2B4BB8,#1E2F7A 55%,#16205A);border:1px solid rgba(255,255,255,.35);box-shadow:0 3px 6px rgba(0,0,0,.5)}' +
+    '.pile{display:flex;align-items:center;justify-content:center;gap:16px;margin:6px auto;padding:10px 18px;border-radius:20px;background:rgba(0,0,0,.25);border:2px solid transparent;transition:transform .15s}' +
+    '.pile.can{border-color:#FCE7B2;animation:pl 1.2s ease-in-out infinite;cursor:pointer}.pile.can:active{transform:scale(.95)}' +
+    '.pile .stk{position:relative;width:118px;height:84px}' +
+    '.pile .bk{position:absolute;width:40px;height:76px;border-radius:8px;transition:transform .25s;background:linear-gradient(135deg,#2B4BB8,#1E2F7A 55%,#16205A);border:1px solid rgba(255,255,255,.35);box-shadow:0 3px 6px rgba(0,0,0,.5)}' +
     '.pile .bk:after{content:"";position:absolute;inset:5px;border:1px solid rgba(255,220,150,.45);border-radius:4px}' +
-    '.pile b{font-size:17px;color:#FCE7B2}' +
+    '.pile b{font-size:20px;color:#FCE7B2;line-height:1.5}.pile b small{display:block;font-size:14px;color:#fff;opacity:.85}' +
+    '.pile.fly .bk:last-child{animation:pf .55s ease-in forwards}@keyframes pf{to{transform:translate(0,150px) rotate(25deg);opacity:0}}' +
+    '.ends{display:grid;grid-template-columns:1fr 1fr;gap:12px}.endb{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px;border-radius:16px;background:#14532D;border:2px solid #4ADE80;color:#fff;font-size:20px;font-weight:800}' +
+    '.endb .dh{flex:none;width:46px;height:46px;background:linear-gradient(135deg,#FFFDF6,#E9E0CC);border-radius:9px;padding:4px;border:1px solid #8C826C}' +
+    '.rv{background:rgba(0,0,0,.3);border-radius:16px;padding:10px;margin:6px 0}.rv .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0}' +
+    '.rv .mini{display:inline-flex;width:44px;height:22px;background:#F7F1E3;border-radius:5px;border:1px solid #8C826C;font-size:12px;font-weight:800;color:#111;align-items:center;justify-content:space-around}' +
+    '.rv .sum{margin-inline-start:auto;background:#7F1D1D;border-radius:10px;padding:2px 10px;font-weight:900}' +
     '.drawbtn{background:linear-gradient(135deg,#2B4BB8,#1E2F7A);color:#fff;border:2px solid #FCE7B2;animation:pl 1.2s ease-in-out infinite}' +
     '@keyframes pl{50%{box-shadow:0 0 0 8px rgba(252,231,178,.18)}}' +
     '.dt.new{animation:dn .6s ease-out}@keyframes dn{from{transform:translateY(-60px) rotate(-12deg);opacity:0}}' +
@@ -71,6 +78,17 @@
       [392, 523, 659, 784].forEach(function (f, i) { note(f, i * 0.16, 0.2); });
       note(1046, 0.66, 0.9); note(784, 0.66, 0.9, 'triangle', 0.15); note(523, 0.66, 0.9, 'triangle', 0.12);
     } else if (kind === 'tick') { note(1200, 0, 0.06, 'square', 0.06); }
+    else if (kind === 'draw') {
+      // انزلاق ورقة من الكومة ثم نقرة وضعها
+      try {
+        var len = Math.floor(ac.sampleRate * 0.28), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+        for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.min(1, i / (len * 0.15)) * (1 - i / len);
+        var src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+        src.buffer = buf; f.type = 'bandpass'; f.frequency.setValueAtTime(900, ac.currentTime); f.frequency.linearRampToValueAtTime(2600, ac.currentTime + 0.26); f.Q.value = 0.9;
+        g.gain.value = 0.5; src.connect(f); f.connect(g); g.connect(ac.destination); src.start();
+      } catch (e) {}
+      note(1150, 0.25, 0.07, 'sine', 0.3); note(520, 0.25, 0.1, 'sine', 0.2);
+    }
   }
   window.megaSound = snd;
 
@@ -312,7 +330,7 @@
     for (var k = 0; k < 9; k++) h += '<i' + (PIPS[n].indexOf(k) >= 0 ? ' class="on"' : '') + '></i>';
     return h + '</div>';
   }
-  var pickTile = -1, lastHandN = 0;
+  var pickTile = -1, lastHandN = 0, lastDrawSeq = -1, drawing = false;
   function renderDomino() {
     var hand = st.hand || [], pl = st.playable || [], my = st.myTurn, ends = st.ends;
     var canAny = pl.some(function (x) { return x; });
@@ -332,14 +350,27 @@
     h += '<div class="chips" style="justify-content:center">';
     (st.others || []).forEach(function (o) { h += '<span class="chip"' + (o.mate ? ' style="background:#166534"' : '') + '>' + (o.mate ? '🤝 ' : '') + esc(o.name) + ': ' + ar(o.n) + '</span>'; });
     h += '</div>';
+    var mustDraw = my && !canAny && !st.result && st.bone > 0;
     if (st.bone > 0) {
-      // كومة السحب: أوراق مقلوبة متراكبة وعددها
+      // كومة السحب: أوراق مقلوبة متراكبة وعددها، وتُسحب منها بالضغط عليها مباشرة
       var stk = '';
-      for (var b = 0; b < Math.min(5, st.bone); b++) stk += '<i class="bk" style="left:' + (b * 9) + 'px;top:' + (b % 2 ? 2 : 0) + 'px;transform:rotate(' + ((b - 2) * 4) + 'deg)"></i>';
-      h += '<div class="pile"><div class="stk">' + stk + '</div><b>الكومة: ' + ar(st.bone) + '</b></div>';
+      for (var b = 0; b < Math.min(7, st.bone); b++) stk += '<i class="bk" style="left:' + (b * 11) + 'px;top:' + (b % 2 ? 3 : 0) + 'px;transform:rotate(' + ((b - 3) * 4) + 'deg)"></i>';
+      h += '<div class="pile' + (mustDraw ? ' can' : '') + '" id="pile"><div class="stk">' + stk + '</div><b>الكومة: ' + ar(st.bone) +
+        (mustDraw ? '<small>اضغط على الكومة للسحب</small>' : '') + '</b></div>';
     }
-    h += '<div class="q" style="font-size:18px">' + (st.result ? esc(st.result) : ends ? '<span dir="ltr" style="display:inline-flex;gap:14px"><span dir="rtl">يسار ' + ar(ends[0]) + ' ◀</span><span>·</span><span dir="rtl">▶ يمين ' + ar(ends[1]) + '</span></span>' : 'الطاولة فارغة') + '</div>';
+    h += '<div class="q" style="font-size:18px">' + (st.result ? esc(st.result) : ends ? 'الطرفان المفتوحان: <b style="color:#4ADE80">' + ar(ends[0]) + '</b> و <b style="color:#4ADE80">' + ar(ends[1]) + '</b>' : 'الطاولة فارغة') + '</div>';
     if (!st.result) h += '<div class="muted" style="text-align:center">' + esc(st.note || '') + '</div>';
+    else if (st.reveal) {
+      // كشف الجولة: الفائز، وأوراق كل خاسر ومجموعها، والنقاط المضافة
+      h += '<div class="rv"><div class="big" style="text-align:center;font-size:22px;color:' + (st.winMe ? '#4ADE80' : '#FCE7B2') + '">🏆 ' + esc(st.winName || '') +
+        ' <span style="color:#4ADE80">+' + ar(st.roundPts || 0) + '</span></div>';
+      st.reveal.forEach(function (l) {
+        h += '<div class="row"><b>' + esc(l.name) + '</b>';
+        (l.tiles || []).forEach(function (t) { h += '<span class="mini"><span>' + ar(t[0]) + '</span><span>' + ar(t[1]) + '</span></span>'; });
+        h += '<span class="sum">' + ar(l.pips) + '</span></div>';
+      });
+      h += '</div>';
+    }
     else h += '<div class="muted" style="text-align:center">' + (st.matchOver ? 'انتهت المباراة! المتحكم يبدأ مباراة جديدة' : 'الجولة التالية تبدأ تلقائيًا…') + '</div>';
     if (!st.seated) {
       m.innerHTML = h + '<div class="center muted">أنت تشاهد هذه الجولة (أربعة لاعبين كحد أقصى)</div>';
@@ -354,9 +385,10 @@
     });
     h += '</div>';
     if (pickTile >= 0 && my) {
-      h += '<div class="muted" style="text-align:center">الحجر يركب في الطرفين، اختر المكان:</div>' +
-        '<div class="row" dir="ltr" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn" dir="rtl" data-s="L">يسار الطاولة (' + ar(ends[0]) + ') ◀</button>' +
-        '<button class="btn" dir="rtl" data-s="R">▶ يمين الطاولة (' + ar(ends[1]) + ')</button></div>';
+      // الحجر يركب على الطرفين: الاختيار برقم الطرف المفتوح (كما يظهر على الطاولة) لا باليمين واليسار
+      h += '<div class="muted" style="text-align:center">الحجر يركب على الطرفين، اختر الرقم الذي تلعب عليه:</div>' +
+        '<div class="ends"><button class="endb" data-e="' + ends[0] + '" data-s="L">' + half(ends[0]) + '<span>على ' + ar(ends[0]) + '</span></button>' +
+        '<button class="endb" data-e="' + ends[1] + '" data-s="R">' + half(ends[1]) + '<span>على ' + ar(ends[1]) + '</span></button></div>';
     }
     if (my && !canAny && !st.result) {
       h += st.bone > 0
@@ -379,10 +411,23 @@
       };
     });
     [].forEach.call(m.querySelectorAll('[data-s]'), function (b) {
-      b.onclick = function () { send({ t: 'dom', a: 'play', i: pickTile, side: b.getAttribute('data-s') }); pickTile = -1; snd('tick'); };
+      b.onclick = function () { send({ t: 'dom', a: 'play', i: pickTile, end: +b.getAttribute('data-e'), side: b.getAttribute('data-s') }); pickTile = -1; snd('tick'); };
     });
     var dp = document.getElementById('dp'); if (dp) dp.onclick = function () { send({ t: 'dom', a: 'pass' }); };
-    var dd = document.getElementById('dd'); if (dd) dd.onclick = function () { dd.disabled = true; send({ t: 'dom', a: 'draw' }); snd('tick'); };
+    var doDraw = function () {
+      if (drawing) return;
+      drawing = true;
+      var pe = document.getElementById('pile'); if (pe) pe.classList.add('fly');
+      var b2 = document.getElementById('dd'); if (b2) b2.disabled = true;
+      send({ t: 'dom', a: 'draw' });
+      if (navigator.vibrate) navigator.vibrate(20);
+    };
+    drawing = false;
+    var dd = document.getElementById('dd'); if (dd) dd.onclick = doDraw;
+    var pe = document.getElementById('pile'); if (pe && mustDraw) pe.onclick = doDraw;
+    // صوت سحب ورقة من الكومة (لأي لاعب)
+    if ((st.drawSeq || 0) > lastDrawSeq && lastDrawSeq >= 0) snd('draw');
+    lastDrawSeq = st.drawSeq || 0;
   }
 
   /* ---------- ربط العرض ---------- */
